@@ -6,12 +6,28 @@
 // 実機テストでは PC の LAN IP（例: http://192.168.x.x:8000）に置き換えること。
 
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-// 接続先バックエンドのURLを決める。
-//  - web: 開いているページと同じホスト（localhost でも PCのLAN IP でもOK）の :8000
+// 接続先バックエンド(:8000)のURLを決める。
+//  - web: 開いているページと同じホスト（localhost でも PCのLAN IP でもOK）
+//  - 実機(Expo Go): Expo が接続している開発PCのIPを hostUri から取得して使う
 //  - Android エミュレータ: 10.0.2.2（ホストPCを指す特別なIP）
 //  - iOS シミュレータ等: 127.0.0.1
-// 実機(Expo Go)や別PCから使う場合は、開いた URL のホスト名がそのまま使われる。
+function devMachineHost(): string | null {
+  // 例: "192.168.131.44:8081" → "192.168.131.44"
+  const hostUri =
+    Constants.expoConfig?.hostUri ||
+    // 旧フィールドのフォールバック
+    (Constants as any).expoGoConfig?.debuggerHost ||
+    (Constants as any).manifest?.debuggerHost ||
+    (Constants as any).manifest2?.extra?.expoGo?.developer?.host;
+  if (typeof hostUri === 'string' && hostUri.length > 0) {
+    const host = hostUri.split(':')[0];
+    if (host) return host;
+  }
+  return null;
+}
+
 function resolveApiBase(): string {
   if (
     Platform.OS === 'web' &&
@@ -21,6 +37,8 @@ function resolveApiBase(): string {
   ) {
     return `http://${window.location.hostname}:8000`;
   }
+  const host = devMachineHost();
+  if (host) return `http://${host}:8000`;
   if (Platform.OS === 'android') return 'http://10.0.2.2:8000';
   return 'http://127.0.0.1:8000';
 }
