@@ -63,15 +63,16 @@ def test_reading_endpoint() -> None:
     assert body["sections"][-1]["title"] == "対人関係・相性"
     assert body["sections"][0]["text"]  # 非空
     assert "best" in body["compatibility_guide"]
-    assert body["element_balance"]["total"] == 6
+    assert body["element_balance"]["include_hidden_stems"] is True
+    assert sum(body["element_balance"]["percentages"].values()) == 100
 
 
 def test_five_element_balance_endpoint() -> None:
     r = client.post("/five-element-balance", json={"birthdate": "1990-04-15"})
     assert r.status_code == 200
     body = r.json()
-    assert body["total"] == 6
-    assert sum(body["counts"].values()) == 6
+    assert sum(body["scores"].values()) == body["total"]
+    assert sum(body["percentages"].values()) == 100
     assert body["day_master"] == "金"  # 1990-04-15 = 庚（金）
 
 
