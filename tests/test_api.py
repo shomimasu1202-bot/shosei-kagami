@@ -42,3 +42,21 @@ def test_day_pillar_endpoint() -> None:
 def test_invalid_date_returns_422() -> None:
     r = client.get("/type", params={"birthdate": "not-a-date"})
     assert r.status_code == 422
+
+
+def test_three_pillars_endpoint() -> None:
+    r = client.post("/three-pillars", json={"birthdate": "2024-02-10"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["year"]["year_stem_name"] + body["year"]["year_branch_name"] == "甲辰"
+    assert body["month"]["month_stem_name"] + body["month"]["month_branch_name"] == "丙寅"
+
+
+def test_year_pillar_endpoint_with_time() -> None:
+    # 立春当日 2024-02-04、夜（立春後）は甲辰年
+    r = client.post(
+        "/year-pillar", json={"birthdate": "2024-02-04", "birthtime": "20:00"}
+    )
+    assert r.status_code == 200
+    b = r.json()
+    assert b["year_stem_name"] + b["year_branch_name"] == "甲辰"

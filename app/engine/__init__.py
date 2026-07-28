@@ -26,6 +26,21 @@ from .type_table import (
     TYPE_TABLE,
     get_type,
 )
+from .solar import (
+    JST,
+    SOLAR_TERM_NAMES,
+    SOLAR_TERM_LONGITUDES,
+    solar_longitude,
+    find_solar_term,
+)
+from .pillars import (
+    YearPillar,
+    MonthPillar,
+    ThreePillars,
+    get_year_pillar,
+    get_month_pillar,
+    get_three_pillars,
+)
 
 __all__ = [
     "STEMS",
@@ -40,4 +55,15 @@ __all__ = [
     "ShoseiType",
     "TYPE_TABLE",
     "get_type",
+    "JST",
+    "SOLAR_TERM_NAMES",
+    "SOLAR_TERM_LONGITUDES",
+    "solar_longitude",
+    "find_solar_term",
+    "YearPillar",
+    "MonthPillar",
+    "ThreePillars",
+    "get_year_pillar",
+    "get_month_pillar",
+    "get_three_pillars",
 ]
