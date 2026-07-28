@@ -10,7 +10,7 @@ from __future__ import annotations
 import datetime as dt
 import sys
 
-from app.engine import get_five_element_profile, get_type, get_three_pillars
+from app.engine import get_five_element_profile, get_type, get_three_pillars, get_reading
 
 DEFAULT_DATES = [
     "1990-04-15",
@@ -33,6 +33,10 @@ def show(date_str: str) -> None:
     print(f"   五行 : {prof.五行} ／ 陰陽 : {prof.陰陽}（日干ベース）")
     print(f"   タイプ: {t.名称}（{t.読み}） [{t.type_id}]")
     print(f"          {t.一言特徴}")
+    r = get_reading(d)
+    for sec in r.sections:
+        print(f"   【{sec.title}】")
+        print(f"     {sec.text}")
     print()
 
 

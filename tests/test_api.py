@@ -52,6 +52,16 @@ def test_three_pillars_endpoint() -> None:
     assert body["month"]["month_stem_name"] + body["month"]["month_branch_name"] == "丙寅"
 
 
+def test_reading_endpoint() -> None:
+    r = client.post("/reading", json={"birthdate": "2000-01-07"})  # 甲 → you
+    assert r.status_code == 200
+    body = r.json()
+    assert body["type_id"] == "you"
+    assert len(body["sections"]) == 3
+    assert body["sections"][0]["title"] == "基本性格・強み・課題"
+    assert body["sections"][0]["text"]  # 非空
+
+
 def test_year_pillar_endpoint_with_time() -> None:
     # 立春当日 2024-02-04、夜（立春後）は甲辰年
     r = client.post(

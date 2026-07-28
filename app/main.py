@@ -18,6 +18,7 @@ from .engine import (
     get_year_pillar,
     get_month_pillar,
     get_three_pillars,
+    get_reading,
 )
 
 app = FastAPI(
@@ -92,6 +93,14 @@ def month_pillar(q: BirthDatetimeQuery) -> dict:
 def three_pillars(q: BirthDatetimeQuery) -> dict:
     return get_three_pillars(
         q.to_value(), late_night_boundary=q.late_night_boundary
+    ).to_dict()
+
+
+@app.post("/reading")
+def reading(q: BirthdateQuery) -> dict:
+    """生年月日 → 鑑定文（基本性格・恋愛・仕事の3セクション）。"""
+    return get_reading(
+        q.birthdate, late_night_boundary=q.late_night_boundary
     ).to_dict()
 
 
