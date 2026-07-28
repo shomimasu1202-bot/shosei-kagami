@@ -58,8 +58,8 @@ def test_scores_sum_equals_total() -> None:
     assert b.include_hidden_stems is True
 
 
-def test_scores_match_manual_weighted_tally() -> None:
-    """天干＋蔵干（本気3/中気2/余気1）の手計算と一致する。"""
+def test_scores_match_manual_weighted_tally_without_bunya() -> None:
+    """月律分野を切ると、全地支が固定蔵干（本気3/中気2/余気1）の手計算と一致する。"""
     d = dt.date(1988, 11, 3)
     tp = get_three_pillars(d)
     expected = {e: 0 for e in ELEMENTS_ORDER}
@@ -69,7 +69,9 @@ def test_scores_match_manual_weighted_tally() -> None:
     for br in (tp.year.year_branch_index, tp.month.month_branch_index, tp.day.day_branch_index):
         for stem_idx, role in HIDDEN_STEMS[br]:
             expected[element_of_stem(stem_idx)] += role_w[role]
-    assert get_five_element_balance(d).scores == expected
+    got = get_five_element_balance(d, use_getsuritsu_bunya=False)
+    assert got.scores == expected
+    assert got.month_commander is None
 
 
 def test_percentages_sum_to_100() -> None:

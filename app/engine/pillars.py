@@ -29,6 +29,7 @@ from .five_elements import element_of_stem, yinyang_of_stem, element_of_branch
 from .solar import (
     JST,
     SOLAR_TERM_NAMES,
+    SOLAR_TERM_LONGITUDES,
     solar_longitude,
     find_solar_term,
     datetime_to_jd,
@@ -156,6 +157,28 @@ def get_month_pillar(
         五行=element_of_stem(stem_index),
         陰陽=yinyang_of_stem(stem_index),
     )
+
+
+def get_month_solar_term_start(
+    value: _dt.date | _dt.datetime,
+    *,
+    assumed_hour: int = 12,
+) -> _dt.datetime:
+    """生誕日が属する月（節月）を始めた「節入り」の JST 日時を返す。
+
+    月律分野蔵干の司令判定に使う「節入りからの経過日数」の起点。
+    """
+    jst_dt = normalize_to_jst(value, assumed_hour=assumed_hour)
+    jd = datetime_to_jd(jst_dt)
+    lon = solar_longitude(jd)
+    k = int(((lon - 315.0) % 360.0) // 30.0)  # 0=寅 … 11=丑
+    target = SOLAR_TERM_LONGITUDES[k]
+    # 生誕以前で最も近い当該節の occurrence を選ぶ（年境をまたぐ節に対応）。
+    candidates = [
+        find_solar_term(y, target) for y in (jst_dt.year - 1, jst_dt.year, jst_dt.year + 1)
+    ]
+    past = [c for c in candidates if c <= jst_dt]
+    return max(past)
 
 
 def get_three_pillars(

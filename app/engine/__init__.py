@@ -40,6 +40,7 @@ from .pillars import (
     get_year_pillar,
     get_month_pillar,
     get_three_pillars,
+    get_month_solar_term_start,
 )
 from .element_balance import (
     FiveElementBalance,
@@ -87,6 +88,7 @@ __all__ = [
     "get_year_pillar",
     "get_month_pillar",
     "get_three_pillars",
+    "get_month_solar_term_start",
     "SECTIONS",
     "SectionReading",
     "Reading",

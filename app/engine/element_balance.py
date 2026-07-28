@@ -21,7 +21,9 @@ from dataclasses import dataclass
 
 from .five_elements import element_of_stem
 from .hidden_stems import hidden_stems_of_branch, HONKI, CHUKI, YOKI
-from .pillars import get_three_pillars
+from .getsuritsu_bunya import GETSURITSU_BUNYA, commanding_stem
+from .pillars import get_three_pillars, get_month_solar_term_start
+from .solar import normalize_to_jst
 
 # 集計・表示順（相生順）。
 ELEMENTS_ORDER: tuple[str, ...] = ("木", "火", "土", "金", "水")
@@ -31,6 +33,10 @@ STEM_WEIGHT = 3
 HONKI_WEIGHT = 3
 CHUKI_WEIGHT = 2
 YOKI_WEIGHT = 1
+
+# 月律分野を使うとき、月支の司令天干に与える重み（他の月蔵干は SUB）。
+COMMANDER_WEIGHT = 3
+COMMANDER_SUB_WEIGHT = 1
 
 _ROLE_WEIGHT = {HONKI: HONKI_WEIGHT, CHUKI: CHUKI_WEIGHT, YOKI: YOKI_WEIGHT}
 # 可視のみ（蔵干なし）: 天干1、本気1、中気・余気0 → 旧来の合計6カウント。
@@ -67,6 +73,7 @@ class FiveElementBalance:
     day_master: str                # 日干の五行（本人＝日主）
     include_hidden_stems: bool     # 蔵干を含めたか
     comment: str                   # 一言サマリ
+    month_commander: dict | None = None  # 月律分野の司令（{stem,phase,element,days_since_setsu}）
 
     def to_dict(self) -> dict:
         return {
@@ -78,6 +85,7 @@ class FiveElementBalance:
             "day_master": self.day_master,
             "include_hidden_stems": self.include_hidden_stems,
             "comment": self.comment,
+            "month_commander": self.month_commander,
         }
 
 
@@ -106,6 +114,7 @@ def get_five_element_balance(
     value: _dt.date | _dt.datetime,
     *,
     include_hidden_stems: bool = True,
+    use_getsuritsu_bunya: bool = True,
     assumed_hour: int = 12,
     late_night_boundary: bool = False,
 ) -> FiveElementBalance:
@@ -113,6 +122,10 @@ def get_five_element_balance(
 
     include_hidden_stems=True（既定）は蔵干を含む本格版。
     False は可視のみ（天干＋地支本気、各1、合計6）の簡易版。
+
+    use_getsuritsu_bunya=True（既定）は月支だけ月律分野蔵干を用い、節入りからの
+    経過日数で決まる「司令」の天干を重視する（同じ月でも生まれ日で効き方が変わる）。
+    include_hidden_stems=False のときは無効。
     """
     tp = get_three_pillars(
         value, assumed_hour=assumed_hour, late_night_boundary=late_night_boundary
@@ -130,14 +143,33 @@ def get_five_element_balance(
     ):
         scores[element_of_stem(stem_index)] += stem_weight
 
-    # 地支の蔵干（年・月・日）
-    for branch_index in (
-        tp.year.year_branch_index,
-        tp.month.month_branch_index,
-        tp.day.day_branch_index,
+    apply_bunya = include_hidden_stems and use_getsuritsu_bunya
+    month_commander: dict | None = None
+
+    # 地支の蔵干（年・月・日）。月支のみ月律分野を適用（apply_bunya のとき）。
+    for pillar_name, branch_index in (
+        ("year", tp.year.year_branch_index),
+        ("month", tp.month.month_branch_index),
+        ("day", tp.day.day_branch_index),
     ):
-        for hidden_stem_index, role in hidden_stems_of_branch(branch_index):
-            scores[element_of_stem(hidden_stem_index)] += role_weight[role]
+        if pillar_name == "month" and apply_bunya:
+            # 節入りからの経過日数で司令の天干を判定し、司令を重視する。
+            setsu = get_month_solar_term_start(value, assumed_hour=assumed_hour)
+            birth = normalize_to_jst(value, assumed_hour=assumed_hour)
+            days_since = (birth - setsu).total_seconds() / 86400.0
+            commander_index, phase = commanding_stem(branch_index, days_since)
+            for hidden_stem_index, _role, _days in GETSURITSU_BUNYA[branch_index]:
+                w = COMMANDER_WEIGHT if hidden_stem_index == commander_index else COMMANDER_SUB_WEIGHT
+                scores[element_of_stem(hidden_stem_index)] += w
+            month_commander = {
+                "stem": ("甲乙丙丁戊己庚辛壬癸")[commander_index],
+                "phase": phase,
+                "element": element_of_stem(commander_index),
+                "days_since_setsu": round(days_since, 1),
+            }
+        else:
+            for hidden_stem_index, role in hidden_stems_of_branch(branch_index):
+                scores[element_of_stem(hidden_stem_index)] += role_weight[role]
 
     total = sum(scores.values())
     mx = max(scores.values())
@@ -154,6 +186,7 @@ def get_five_element_balance(
         day_master=day_master,
         include_hidden_stems=include_hidden_stems,
         comment=_make_comment(dominant, lacking),
+        month_commander=month_commander,
     )
 
 
@@ -167,6 +200,12 @@ def describe_balance(balance: FiveElementBalance) -> str:
     kura = "（地支の蔵干を含めて）" if balance.include_hidden_stems else ""
     s1 = f"あなたの三柱（年・月・日）を{kura}五行で見ると、{pct_str}の巡りです。"
     s2 = f"中でも{dom}の気が豊かで、{strong}があなたの持ち味をいっそう強めています。"
+
+    if balance.month_commander:
+        mc = balance.month_commander
+        s2 += (f"生まれ月を細かく見ると、節入りから約{round(mc['days_since_setsu'])}日の"
+               f"{mc['phase']}にあたり、{mc['stem']}（{mc['element']}）の気が"
+               "いまのあなたをとくに後押ししています。")
 
     if balance.lacking:
         lack = "と".join(balance.lacking)
