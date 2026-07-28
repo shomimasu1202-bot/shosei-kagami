@@ -1,5 +1,7 @@
 # 掌星鑑（しょうせいかがみ）
 
+[![CI](https://github.com/shomimasu1202-bot/shosei-kagami/actions/workflows/ci.yml/badge.svg)](https://github.com/shomimasu1202-bot/shosei-kagami/actions/workflows/ci.yml)
+
 生年月日から性格タイプを診断する占いアプリ。
 外部の有料AIは使わず、公有である干支・五行を土台にした**純粋な計算ロジック**で
 掌星鑑オリジナルの10タイプを決定的に算出する。
