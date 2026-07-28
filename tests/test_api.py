@@ -67,6 +67,12 @@ def test_reading_endpoint() -> None:
     assert sum(body["element_balance"]["percentages"].values()) == 100
 
 
+def test_reading_endpoint_with_time_uses_four_pillars() -> None:
+    r = client.post("/reading", json={"birthdate": "2000-01-07", "birthtime": "10:00"})
+    assert r.status_code == 200
+    assert r.json()["element_balance"]["pillar_count"] == 4
+
+
 def test_hour_pillar_endpoint() -> None:
     r = client.post("/hour-pillar", json={"birthdate": "2000-01-07", "birthtime": "10:00"})
     assert r.status_code == 200

@@ -135,11 +135,9 @@ def compatibility(q: CompatibilityQuery) -> dict:
 
 
 @app.post("/reading")
-def reading(q: BirthdateQuery) -> dict:
-    """生年月日 → 鑑定文（基本性格・恋愛・仕事の3セクション）。"""
-    return get_reading(
-        q.birthdate, late_night_boundary=q.late_night_boundary
-    ).to_dict()
+def reading(q: BirthDatetimeQuery) -> dict:
+    """生年月日（＋任意で時刻）→ 鑑定文。時刻があれば五行バランスは四柱で集計。"""
+    return get_reading(q.to_value()).to_dict()
 
 
 @app.get("/type")
