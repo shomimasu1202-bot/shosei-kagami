@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from .five_elements import element_of_stem
 from .hidden_stems import hidden_stems_of_branch, HONKI, CHUKI, YOKI
 from .getsuritsu_bunya import GETSURITSU_BUNYA, commanding_stem
-from .pillars import get_three_pillars, get_month_solar_term_start
+from .pillars import get_three_pillars, get_month_solar_term_start, get_hour_pillar
 from .solar import normalize_to_jst
 
 # 集計・表示順（相生順）。
@@ -73,6 +73,7 @@ class FiveElementBalance:
     day_master: str                # 日干の五行（本人＝日主）
     include_hidden_stems: bool     # 蔵干を含めたか
     comment: str                   # 一言サマリ
+    pillar_count: int = 3          # 集計に使った柱数（3=三柱, 4=四柱）
     month_commander: dict | None = None  # 月律分野の司令（{stem,phase,element,days_since_setsu}）
 
     def to_dict(self) -> dict:
@@ -85,6 +86,7 @@ class FiveElementBalance:
             "day_master": self.day_master,
             "include_hidden_stems": self.include_hidden_stems,
             "comment": self.comment,
+            "pillar_count": self.pillar_count,
             "month_commander": self.month_commander,
         }
 
@@ -115,10 +117,11 @@ def get_five_element_balance(
     *,
     include_hidden_stems: bool = True,
     use_getsuritsu_bunya: bool = True,
+    include_hour: bool = True,
     assumed_hour: int = 12,
-    late_night_boundary: bool = False,
+    late_night_boundary: bool = True,
 ) -> FiveElementBalance:
-    """生年月日（＋時刻）→ 三柱の五行バランス。
+    """生年月日（＋時刻）→ 三柱／四柱の五行バランス。
 
     include_hidden_stems=True（既定）は蔵干を含む本格版。
     False は可視のみ（天干＋地支本気、各1、合計6）の簡易版。
@@ -126,6 +129,10 @@ def get_five_element_balance(
     use_getsuritsu_bunya=True（既定）は月支だけ月律分野蔵干を用い、節入りからの
     経過日数で決まる「司令」の天干を重視する（同じ月でも生まれ日で効き方が変わる）。
     include_hidden_stems=False のときは無効。
+
+    include_hour=True（既定・論点C）かつ value が時刻を含む datetime のとき、
+    時柱（時干＋時支の蔵干）を加えて四柱で集計する。date のみなら三柱。
+    late_night_boundary=True（既定・論点A）: 23時以降は翌日の日干で日柱・時柱を出す。
     """
     tp = get_three_pillars(
         value, assumed_hour=assumed_hour, late_night_boundary=late_night_boundary
@@ -171,6 +178,16 @@ def get_five_element_balance(
             for hidden_stem_index, role in hidden_stems_of_branch(branch_index):
                 scores[element_of_stem(hidden_stem_index)] += role_weight[role]
 
+    # 時柱（時刻があるときのみ・論点C）: 時干＋時支の蔵干を加える。
+    pillar_count = 3
+    if include_hour and isinstance(value, _dt.datetime):
+        hp = get_hour_pillar(value, late_night_boundary=late_night_boundary)
+        scores[element_of_stem(hp.hour_stem_index)] += stem_weight
+        if include_hidden_stems:
+            for hidden_stem_index, role in hidden_stems_of_branch(hp.hour_branch_index):
+                scores[element_of_stem(hidden_stem_index)] += role_weight[role]
+        pillar_count = 4
+
     total = sum(scores.values())
     mx = max(scores.values())
     dominant = tuple(e for e in ELEMENTS_ORDER if scores[e] == mx)
@@ -186,6 +203,7 @@ def get_five_element_balance(
         day_master=day_master,
         include_hidden_stems=include_hidden_stems,
         comment=_make_comment(dominant, lacking),
+        pillar_count=pillar_count,
         month_commander=month_commander,
     )
 
@@ -198,7 +216,8 @@ def describe_balance(balance: FiveElementBalance) -> str:
     strong = "、".join(_STRONG_TRAIT[e] for e in balance.dominant)
 
     kura = "（地支の蔵干を含めて）" if balance.include_hidden_stems else ""
-    s1 = f"あなたの三柱（年・月・日）を{kura}五行で見ると、{pct_str}の巡りです。"
+    chart = "四柱（年・月・日・時）" if balance.pillar_count == 4 else "三柱（年・月・日）"
+    s1 = f"あなたの{chart}を{kura}五行で見ると、{pct_str}の巡りです。"
     s2 = f"中でも{dom}の気が豊かで、{strong}があなたの持ち味をいっそう強めています。"
 
     if balance.month_commander:

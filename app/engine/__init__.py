@@ -36,10 +36,14 @@ from .solar import (
 from .pillars import (
     YearPillar,
     MonthPillar,
+    HourPillar,
     ThreePillars,
+    FourPillars,
     get_year_pillar,
     get_month_pillar,
+    get_hour_pillar,
     get_three_pillars,
+    get_four_pillars,
     get_month_solar_term_start,
 )
 from .element_balance import (
@@ -85,9 +89,13 @@ __all__ = [
     "YearPillar",
     "MonthPillar",
     "ThreePillars",
+    "HourPillar",
+    "FourPillars",
     "get_year_pillar",
     "get_month_pillar",
+    "get_hour_pillar",
     "get_three_pillars",
+    "get_four_pillars",
     "get_month_solar_term_start",
     "SECTIONS",
     "SectionReading",

@@ -21,6 +21,8 @@ from .engine import (
     get_reading,
     get_compatibility,
     get_five_element_balance,
+    get_hour_pillar,
+    get_four_pillars,
 )
 
 app = FastAPI(
@@ -98,12 +100,25 @@ def three_pillars(q: BirthDatetimeQuery) -> dict:
     ).to_dict()
 
 
+@app.post("/hour-pillar")
+def hour_pillar(q: BirthDatetimeQuery) -> dict:
+    """時柱（時干支）。出生時刻(birthtime)が必須。"""
+    v = q.to_value()
+    if not isinstance(v, _dt.datetime):
+        raise HTTPException(status_code=422, detail="時柱には出生時刻(birthtime)が必要です")
+    return get_hour_pillar(v).to_dict()
+
+
+@app.post("/four-pillars")
+def four_pillars(q: BirthDatetimeQuery) -> dict:
+    """四柱（年・月・日・時）。時刻が無ければ hour は null。"""
+    return get_four_pillars(q.to_value()).to_dict()
+
+
 @app.post("/five-element-balance")
 def five_element_balance(q: BirthDatetimeQuery) -> dict:
-    """三柱（年・月・日）の五行バランス。"""
-    return get_five_element_balance(
-        q.to_value(), late_night_boundary=q.late_night_boundary
-    ).to_dict()
+    """三柱／四柱の五行バランス（時刻があれば四柱）。"""
+    return get_five_element_balance(q.to_value()).to_dict()
 
 
 class CompatibilityQuery(BaseModel):

@@ -247,9 +247,13 @@ def build_reading_for_type(
 def get_reading(
     value: _dt.date | _dt.datetime,
     *,
-    late_night_boundary: bool = False,
+    late_night_boundary: bool = True,
 ) -> Reading:
-    """生年月日 → 鑑定文（日干タイプ＋五行陰陽＋三柱の五行バランスで合成）。"""
+    """生年月日（＋時刻）→ 鑑定文（日干タイプ＋五行陰陽＋五行バランスで合成）。
+
+    time を含む datetime を渡すと、五行バランスは四柱（時柱込み）で集計される。
+    late_night_boundary=True（既定・論点A）: 23時以降は翌日の日干でタイプ・日柱を出す。
+    """
     t = get_type(value, late_night_boundary=late_night_boundary)
     balance = get_five_element_balance(value, late_night_boundary=late_night_boundary)
     return build_reading_for_type(t, balance)

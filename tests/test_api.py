@@ -67,6 +67,33 @@ def test_reading_endpoint() -> None:
     assert sum(body["element_balance"]["percentages"].values()) == 100
 
 
+def test_hour_pillar_endpoint() -> None:
+    r = client.post("/hour-pillar", json={"birthdate": "2000-01-07", "birthtime": "10:00"})
+    assert r.status_code == 200
+    b = r.json()
+    assert b["hour_stem_name"] + b["hour_branch_name"] == "己巳"
+
+
+def test_hour_pillar_requires_time() -> None:
+    r = client.post("/hour-pillar", json={"birthdate": "2000-01-07"})
+    assert r.status_code == 422
+
+
+def test_four_pillars_endpoint_with_and_without_time() -> None:
+    r1 = client.post("/four-pillars", json={"birthdate": "2000-01-07", "birthtime": "10:00"})
+    assert r1.status_code == 200
+    assert r1.json()["hour"]["hour_branch_name"] == "巳"
+    r2 = client.post("/four-pillars", json={"birthdate": "2000-01-07"})
+    assert r2.status_code == 200
+    assert r2.json()["hour"] is None
+
+
+def test_balance_endpoint_four_pillars_with_time() -> None:
+    r = client.post("/five-element-balance", json={"birthdate": "2000-01-07", "birthtime": "10:00"})
+    assert r.status_code == 200
+    assert r.json()["pillar_count"] == 4
+
+
 def test_five_element_balance_endpoint() -> None:
     r = client.post("/five-element-balance", json={"birthdate": "1990-04-15"})
     assert r.status_code == 200
