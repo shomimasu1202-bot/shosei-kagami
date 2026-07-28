@@ -57,14 +57,17 @@ def test_reading_endpoint() -> None:
     assert r.status_code == 200
     body = r.json()
     assert body["type_id"] == "you"
-    assert len(body["sections"]) == 5  # 4静的 + 五行バランス
+    assert len(body["sections"]) == 6  # 4静的 + 五行バランス + 今年の運勢
     assert body["sections"][0]["title"] == "基本性格・強み・課題"
     assert body["sections"][1]["title"] == "五行バランス"
-    assert body["sections"][-1]["title"] == "対人関係・相性"
+    assert body["sections"][-1]["title"] == "今年の運勢"
     assert body["sections"][0]["text"]  # 非空
     assert "best" in body["compatibility_guide"]
     assert body["element_balance"]["include_hidden_stems"] is True
     assert sum(body["element_balance"]["percentages"].values()) == 100
+    assert body["year_fortune"]["ten_god"] in (
+        "比肩", "劫財", "食神", "傷官", "偏財", "正財", "偏官", "正官", "偏印", "印綬",
+    )
 
 
 def test_cors_header_present() -> None:

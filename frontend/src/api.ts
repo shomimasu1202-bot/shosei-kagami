@@ -48,6 +48,12 @@ export type Reading = {
   sections: SectionReading[];
   compatibility_guide: { best: string[]; caution: string[] };
   element_balance: ElementBalance | null;
+  year_fortune: {
+    reference_year: number;
+    astrological_year: number;
+    year_ganzhi: string;
+    ten_god: string;
+  } | null;
 };
 
 export type FourPillars = {

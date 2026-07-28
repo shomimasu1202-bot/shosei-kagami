@@ -101,8 +101,8 @@ def test_headline_contains_name_and_element() -> None:
 
 
 def test_section_titles_match_spec() -> None:
-    # get_reading は五行バランスを基本性格の直後に挿入する。
-    r = get_reading(dt.date(2000, 1, 7))
+    # get_reading は五行バランスを基本性格の直後、今年の運勢を末尾に置く。
+    r = get_reading(dt.date(2000, 1, 7), reference_date=dt.date(2026, 6, 1))
     titles = [s.title for s in r.sections]
     assert titles == [
         "基本性格・強み・課題",
@@ -110,6 +110,7 @@ def test_section_titles_match_spec() -> None:
         "恋愛・結婚",
         "仕事・適職・金運",
         "対人関係・相性",
+        "今年の運勢",
     ]
 
 

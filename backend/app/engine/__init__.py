@@ -64,6 +64,7 @@ from .compatibility import (
     compatibility_guide_for_type,
     get_compatibility,
 )
+from .ten_gods import TEN_GODS, get_ten_god
 from .reading import (
     SECTIONS,
     SectionReading,
@@ -110,6 +111,8 @@ __all__ = [
     "Reading",
     "build_reading_for_type",
     "get_reading",
+    "TEN_GODS",
+    "get_ten_god",
     "Compatibility",
     "CompatibilityGuide",
     "ELEMENTS",

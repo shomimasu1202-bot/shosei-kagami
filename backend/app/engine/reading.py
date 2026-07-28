@@ -30,6 +30,9 @@ from .element_balance import (
     get_five_element_balance,
     describe_balance,
 )
+from .ganzhi import get_day_pillar
+from .pillars import get_year_pillar
+from .ten_gods import get_ten_god
 
 # (section_id, 表示タイトル) 表示順。
 SECTIONS: tuple[tuple[str, str], ...] = (
@@ -154,6 +157,21 @@ YINYANG_FLAVOR: dict[str, dict[str, str]] = {
 }
 
 
+# 今年の運勢: 流年（その年の年干）の通変星ごとのメッセージ。
+YEAR_FORTUNE_TEXT: dict[str, str] = {
+    "比肩": "自分の足で立ち、仲間と対等に歩む力が高まる年です。自分の軸を大切にしつつ、協力できる場面では素直に手を取り合うと、実りが大きくなります。",
+    "劫財": "行動力と勝負運が高まる一方、出費や競争も増えやすい年です。勢いは活かしつつ、大きな決断やお金の使い方は少し慎重にすると安心です。",
+    "食神": "楽しみや表現がのびのびと広がる、豊かで穏やかな年です。好きなことに素直に取り組むほど、心も運も満たされていきます。",
+    "傷官": "感性と才能が冴えわたる年です。表現やこだわりが光りますが、言葉がつい鋭くなりがちなので、伝え方をやわらげると人間関係が円満に運びます。",
+    "偏財": "人脈やチャンスが広がり、フットワーク軽く動くほど得るものが多い年です。器用に立ち回れますが、あれもこれもと手を広げすぎない工夫を。",
+    "正財": "堅実な積み重ねが実を結ぶ、信頼と安定の年です。地道な努力やコツコツした管理が、着実な形になって返ってきます。",
+    "偏官": "挑戦とプレッシャーが力に変わる年です。ハードルは高めでも、逃げずに立ち向かうことで大きく成長できます。無理のないペース配分を忘れずに。",
+    "正官": "責任や役割が高まり、まわりからの信用が育つ年です。けじめある振る舞いが評価につながります。背伸びしすぎず、誠実に務めるのが吉です。",
+    "偏印": "学びやひらめき、新しい視点を得る変化の年です。興味の赴くままに知識を広げると、思わぬ道が開けます。ただし気移りには少し注意を。",
+    "印綬": "まわりに支えられ、知識や安心を得られる穏やかな年です。学びや準備に向いた時期なので、じっくり土台を固めると後の飛躍につながります。",
+}
+
+
 @dataclass(frozen=True)
 class SectionReading:
     """1 セクション分の鑑定文。JSON シリアライズ可能。"""
@@ -179,6 +197,7 @@ class Reading:
     sections: tuple[SectionReading, ...]
     compatibility_guide: CompatibilityGuide
     element_balance: FiveElementBalance | None = None
+    year_fortune: dict | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -193,6 +212,7 @@ class Reading:
             "element_balance": (
                 self.element_balance.to_dict() if self.element_balance else None
             ),
+            "year_fortune": self.year_fortune,
         }
 
 
@@ -209,12 +229,14 @@ def _compose_section(t: ShoseiType, section_id: str) -> str:
 def build_reading_for_type(
     t: ShoseiType,
     balance: FiveElementBalance | None = None,
+    year_fortune: dict | None = None,
 ) -> Reading:
     """ShoseiType から鑑定文を組み立てる（決定的）。
 
     balance を渡すと「五行バランス」セクション（基本性格の直後）と
     element_balance フィールドが加わり、三柱の五行分布で個別化される。
-    balance=None なら日干タイプのみに基づく（タイプの基準文）。
+    year_fortune を渡すと「今年の運勢」セクション（末尾）と year_fortune フィールドが加わる。
+    どちらも None なら日干タイプのみに基づく（タイプの基準文）。
     """
     headline = f"{t.名称}（{t.読み}）― {t.一言特徴}【五行:{t.五行}／{t.陰陽}】"
     sections: list[SectionReading] = [
@@ -231,6 +253,16 @@ def build_reading_for_type(
                 text=describe_balance(balance),
             ),
         )
+    fortune_field = None
+    if year_fortune is not None:
+        sections.append(
+            SectionReading(
+                section_id="fortune_year",
+                title="今年の運勢",
+                text=year_fortune["text"],
+            )
+        )
+        fortune_field = {k: v for k, v in year_fortune.items() if k != "text"}
     return Reading(
         type_id=t.type_id,
         名称=t.名称,
@@ -241,19 +273,46 @@ def build_reading_for_type(
         sections=tuple(sections),
         compatibility_guide=compatibility_guide_for_type(t),
         element_balance=balance,
+        year_fortune=fortune_field,
     )
+
+
+def _build_year_fortune(
+    value: _dt.date | _dt.datetime,
+    reference_date: _dt.date,
+    late_night_boundary: bool,
+) -> dict:
+    """流年（reference_date の年柱）× 日主 → 今年の運勢（通変星ベース）。"""
+    day_stem = get_day_pillar(value, late_night_boundary=late_night_boundary).day_stem_index
+    yp = get_year_pillar(reference_date)
+    ten_god = get_ten_god(day_stem, yp.year_stem_index)
+    text = (
+        f"{yp.astrological_year}年（{yp.ganzhi_name}）は、あなたの日主から見て"
+        f"「{ten_god}」が巡る年です。{YEAR_FORTUNE_TEXT[ten_god]}"
+    )
+    return {
+        "reference_year": reference_date.year,
+        "astrological_year": yp.astrological_year,
+        "year_ganzhi": yp.ganzhi_name,
+        "ten_god": ten_god,
+        "text": text,
+    }
 
 
 def get_reading(
     value: _dt.date | _dt.datetime,
     *,
     late_night_boundary: bool = True,
+    reference_date: _dt.date | None = None,
 ) -> Reading:
-    """生年月日（＋時刻）→ 鑑定文（日干タイプ＋五行陰陽＋五行バランスで合成）。
+    """生年月日（＋時刻）→ 鑑定文（タイプ＋五行バランス＋今年の運勢で合成）。
 
     time を含む datetime を渡すと、五行バランスは四柱（時柱込み）で集計される。
+    reference_date（既定=今日）の流年から「今年の運勢」を通変星で算出する。
     late_night_boundary=True（既定・論点A）: 23時以降は翌日の日干でタイプ・日柱を出す。
     """
     t = get_type(value, late_night_boundary=late_night_boundary)
     balance = get_five_element_balance(value, late_night_boundary=late_night_boundary)
-    return build_reading_for_type(t, balance)
+    ref = reference_date or _dt.date.today()
+    year_fortune = _build_year_fortune(value, ref, late_night_boundary)
+    return build_reading_for_type(t, balance, year_fortune)
