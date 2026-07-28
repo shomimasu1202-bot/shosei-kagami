@@ -30,10 +30,12 @@ from .solar import (
     JST,
     SOLAR_TERM_NAMES,
     SOLAR_TERM_LONGITUDES,
+    STANDARD_MERIDIAN_JST,
     solar_longitude,
     find_solar_term,
     datetime_to_jd,
     normalize_to_jst,
+    to_true_solar_time,
 )
 
 # 西暦4年 = 甲子（干支紀年法の基準）。
@@ -227,30 +229,54 @@ _HOUR_RANGES: tuple[str, ...] = (
 )
 
 
+def effective_datetime(
+    value: _dt.datetime,
+    *,
+    longitude: float | None = None,
+    apply_equation_of_time: bool = False,
+) -> _dt.datetime:
+    """真太陽時補正を適用した「時辰判定に使う日時」を返す。
+
+    longitude も apply_equation_of_time も指定が無ければ元の値をそのまま返す
+    （論点B: 既定は JST の時計時刻）。longitude 指定または均時差ONのとき、
+    (経度−135)×4分 と均時差で補正した JST 基準の見かけ時刻を返す。
+    """
+    if longitude is None and not apply_equation_of_time:
+        return value
+    jst = normalize_to_jst(value)
+    lon = longitude if longitude is not None else STANDARD_MERIDIAN_JST
+    return to_true_solar_time(jst, lon, apply_equation_of_time=apply_equation_of_time)
+
+
 def get_hour_pillar(
     value: _dt.datetime,
     *,
     late_night_boundary: bool = True,
+    longitude: float | None = None,
+    apply_equation_of_time: bool = False,
 ) -> HourPillar:
     """出生時刻 → 時柱（時干支）。時刻(datetime)が必須。
 
-    - 時支: 2時間ごとの時辰（子=23:00-01:00 …）。時計時刻(JST)をそのまま用いる。
+    - 時支: 2時間ごとの時辰（子=23:00-01:00 …）。既定は時計時刻(JST)そのまま。
     - 時干: 五鼠遁（日上起時）で日干から導く。
         子時の天干 = (日干 index % 5) * 2 % 10
         時干 = (子時の天干 + 時支index) % 10
-    - late_night_boundary=True（既定・論点A）: 23時以降は翌日の日干を用いる
-      （子刻＝翌日の始まり）。False にすると暦日基準（論点C）。
+    - late_night_boundary=True（既定・論点A）: 23時以降は翌日の日干を用いる。
+    - longitude / apply_equation_of_time（論点B・任意）: 出生地の経度と均時差で
+      真太陽時に補正してから時辰・日境界を判定する。
 
-    ※ 五鼠遁で用いる日干は get_day_pillar と同じ境界規則に従うため、
+    ※ 五鼠遁で用いる日干は get_day_pillar と同じ境界規則・同じ補正時刻に従うため、
       日柱と時柱の日干が常に一致する。
     """
     if not isinstance(value, _dt.datetime):
         raise TypeError("時柱の算出には出生時刻を含む datetime が必要です")
 
-    hour = value.hour
-    branch_index = ((hour + 1) // 2) % 12  # 子=0
+    eff = effective_datetime(
+        value, longitude=longitude, apply_equation_of_time=apply_equation_of_time
+    )
+    branch_index = ((eff.hour + 1) // 2) % 12  # 子=0
 
-    day = get_day_pillar(value, late_night_boundary=late_night_boundary)
+    day = get_day_pillar(eff, late_night_boundary=late_night_boundary)
     rat_stem = (day.day_stem_index % 5) * 2 % 10  # 子時の天干
     stem_index = (rat_stem + branch_index) % 10
 
@@ -270,17 +296,34 @@ def get_four_pillars(
     *,
     assumed_hour: int = 12,
     late_night_boundary: bool = True,
+    longitude: float | None = None,
+    apply_equation_of_time: bool = False,
 ) -> FourPillars:
-    """年・月・日・時の四柱を返す。datetime なら時柱も算出、date なら hour=None。"""
+    """年・月・日・時の四柱を返す。datetime なら時柱も算出、date なら hour=None。
+
+    longitude / apply_equation_of_time を指定すると、日柱・時柱は真太陽時補正後の
+    時刻で算出する（年柱・月柱は太陽位置で決まり、分単位の補正では実質変化しない）。
+    """
     three = get_three_pillars(
         value, assumed_hour=assumed_hour, late_night_boundary=late_night_boundary
     )
-    hour = (
-        get_hour_pillar(value, late_night_boundary=late_night_boundary)
-        if isinstance(value, _dt.datetime)
-        else None
+    if not isinstance(value, _dt.datetime):
+        return FourPillars(year=three.year, month=three.month, day=three.day, hour=None)
+
+    hour = get_hour_pillar(
+        value,
+        late_night_boundary=late_night_boundary,
+        longitude=longitude,
+        apply_equation_of_time=apply_equation_of_time,
     )
-    return FourPillars(year=three.year, month=three.month, day=three.day, hour=hour)
+    # 補正時は日柱も補正後の時刻で取り直す（時柱の日干と一致させる）。
+    day = three.day
+    if longitude is not None or apply_equation_of_time:
+        eff = effective_datetime(
+            value, longitude=longitude, apply_equation_of_time=apply_equation_of_time
+        )
+        day = get_day_pillar(eff, late_night_boundary=late_night_boundary)
+    return FourPillars(year=three.year, month=three.month, day=day, hour=hour)
 
 
 def get_three_pillars(

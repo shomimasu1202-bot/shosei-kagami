@@ -168,11 +168,25 @@ shosei-kagami/          ← git リポジトリ（モノレポ）
 - **設計上の確定事項**:
   - **論点A（子刻）＝ 23時で翌日**: 23時以降は翌日の日干で日柱・時柱を出す
     （`late_night_boundary=True` を上位関数の既定に）。年柱・月柱は太陽位置で決まるため移動しない。
-  - **論点B（時刻精度）＝ JSTそのまま**: 経度・均時差補正なし（真太陽時補正は拡張余地）。
+  - **論点B（時刻精度）＝ 既定は JSTそのまま**。任意で**真太陽時補正**（経度＋均時差）を
+    有効化できる（下記）。
   - **論点C（四柱バランス）＝ 時刻があれば四柱**: 時干＋時支（蔵干）を五行バランスに加算。
     時刻不明（date のみ）なら三柱のまま（`element_balance.pillar_count` が 3/4）。
 - API: `POST /hour-pillar`（時刻必須）、`POST /four-pillars`（時刻無ければ hour=null）。
   `POST /five-element-balance`・`POST /reading` も時刻があれば四柱で集計。
+
+### 真太陽時補正（任意・経度＋均時差）
+
+時辰境界は2時間ごとなので、標準時(JST=東経135°)と出生地の経度差・均時差で境界付近の
+判定が変わる。既定は無効（JSTそのまま）だが、`longitude` を渡すと補正できる。
+
+- 補正 = `(経度 − 135) × 4分` ＋ 均時差（`apply_equation_of_time=true` のとき）。
+- 均時差は Meeus ch.28 で算出（[`solar.py`](backend/app/engine/solar.py) `equation_of_time_minutes`）。
+  暦要項レベルと一致（2月中旬 ≈ −14分、11月上旬 ≈ +16分）。
+- 補正後の時刻で時辰・子刻境界・日柱の日干を一貫して判定する。
+- 主要都市の経度表 `CITY_LONGITUDE`（東京139.69° 等）を同梱。
+- API: `POST /hour-pillar` / `POST /four-pillars` に `longitude`・`apply_equation_of_time`。
+- ※ 例: 10:50 JST は巳時だが、東京経度(+約19分)で 11:09 → 午時になる。
 
 ## バックエンド セットアップ
 

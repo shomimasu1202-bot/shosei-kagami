@@ -60,6 +60,12 @@ class BirthDatetimeQuery(BaseModel):
     late_night_boundary: bool = Field(
         False, description="日柱の子の刻境界（時刻指定時のみ有効）"
     )
+    longitude: float | None = Field(
+        None, description="出生地の経度（真太陽時補正・時柱/四柱で有効）"
+    )
+    apply_equation_of_time: bool = Field(
+        False, description="均時差補正を行う（真太陽時）"
+    )
 
     def to_value(self) -> _dt.date | _dt.datetime:
         if self.birthtime is None:
@@ -116,13 +122,21 @@ def hour_pillar(q: BirthDatetimeQuery) -> dict:
     v = q.to_value()
     if not isinstance(v, _dt.datetime):
         raise HTTPException(status_code=422, detail="時柱には出生時刻(birthtime)が必要です")
-    return get_hour_pillar(v).to_dict()
+    return get_hour_pillar(
+        v,
+        longitude=q.longitude,
+        apply_equation_of_time=q.apply_equation_of_time,
+    ).to_dict()
 
 
 @app.post("/four-pillars")
 def four_pillars(q: BirthDatetimeQuery) -> dict:
-    """四柱（年・月・日・時）。時刻が無ければ hour は null。"""
-    return get_four_pillars(q.to_value()).to_dict()
+    """四柱（年・月・日・時）。時刻が無ければ hour は null。経度指定で真太陽時補正。"""
+    return get_four_pillars(
+        q.to_value(),
+        longitude=q.longitude,
+        apply_equation_of_time=q.apply_equation_of_time,
+    ).to_dict()
 
 
 @app.post("/five-element-balance")

@@ -38,6 +38,21 @@ SOLAR_TERM_NAMES: tuple[str, ...] = (
 # 太陽の平均日運動（度/日）。ニュートン法の近傍導関数として用いる。
 _DEG_PER_DAY = 0.98564736
 
+# 日本標準時の標準子午線（東経135°）。
+STANDARD_MERIDIAN_JST = 135.0
+
+# 主要都市の経度（真太陽時補正の目安）。
+CITY_LONGITUDE: dict[str, float] = {
+    "札幌": 141.35,
+    "仙台": 140.87,
+    "東京": 139.69,
+    "名古屋": 136.91,
+    "大阪": 135.50,
+    "広島": 132.46,
+    "福岡": 130.40,
+    "那覇": 127.68,
+}
+
 
 def delta_t_seconds(year: float) -> float:
     """ΔT（TT − UT1）の近似値[秒]。Espenak & Meeus (2006) の多項式。
@@ -149,6 +164,52 @@ def solar_longitude(jd_ut: float) -> float:
     omega = 125.04 - 1934.136 * t
     apparent = true_long - 0.00569 - 0.00478 * math.sin(math.radians(omega))
     return apparent % 360.0
+
+
+def equation_of_time_minutes(jd_ut: float) -> float:
+    """均時差（視太陽時 − 平均太陽時）を分で返す。Meeus ch.28。
+
+    正の値は日時計が時計より進んでいることを表す（例: 11月上旬 ≈ +16分、
+    2月中旬 ≈ −14分）。精度は太陽黄経の低精度式に準じ、数十秒程度。
+    """
+    approx_year = (jd_ut - 2451545.0) / 365.25 + 2000.0
+    jde = jd_ut + delta_t_seconds(approx_year) / 86400.0
+    t = (jde - 2451545.0) / 36525.0
+
+    # 幾何平均黄経（度）
+    l0 = (280.46646 + 36000.76983 * t + 0.0003032 * t * t) % 360.0
+    # 視黄経（度）
+    lam = solar_longitude(jd_ut)
+    # 平均黄道傾斜（度, Meeus 22.2）
+    eps = 23.439291 - 0.0130042 * t - 1.64e-7 * t * t + 5.04e-7 * t * t * t
+
+    lam_r = math.radians(lam)
+    eps_r = math.radians(eps)
+    # 視赤経（度）
+    alpha = math.degrees(math.atan2(math.cos(eps_r) * math.sin(lam_r), math.cos(lam_r))) % 360.0
+
+    e = l0 - 0.0057183 - alpha
+    e = ((e + 180.0) % 360.0) - 180.0  # (-180, 180]
+    return e * 4.0  # 1度 = 4分
+
+
+def to_true_solar_time(
+    jst_dt: _dt.datetime,
+    longitude: float,
+    *,
+    apply_equation_of_time: bool = True,
+) -> _dt.datetime:
+    """JST の日時 → 出生地の真太陽時（tz-aware, JST基準の見かけ時刻）。
+
+    補正 = (経度 − 135) × 4分  ＋  均時差（任意）。
+    東経135°より東は日時計が進む（＋）、西は遅れる（−）。
+    """
+    if jst_dt.tzinfo is None:
+        jst_dt = jst_dt.replace(tzinfo=JST)
+    offset_min = (longitude - STANDARD_MERIDIAN_JST) * 4.0
+    if apply_equation_of_time:
+        offset_min += equation_of_time_minutes(datetime_to_jd(jst_dt))
+    return jst_dt + _dt.timedelta(minutes=offset_min)
 
 
 def find_solar_term(year: int, target_longitude: float) -> _dt.datetime:
