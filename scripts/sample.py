@@ -30,6 +30,9 @@ def show(date_str: str) -> None:
     print(f"   年柱 : {tp.year.ganzhi_name}（立春基準 {tp.year.astrological_year}年）")
     print(f"   月柱 : {tp.month.ganzhi_name}（{tp.month.solar_term_name}節・{tp.month.month_branch_name}月）")
     print(f"   日柱 : {tp.day.ganzhi_name}（日干 {tp.day.day_stem_name} / 日支 {tp.day.day_branch_name}）")
+    bal = get_reading(d).element_balance
+    cs = "・".join(f"{e}{bal.counts[e]}" for e in ("木", "火", "土", "金", "水"))
+    print(f"   五行バランス: {cs}（{bal.comment}）")
     print(f"   五行 : {prof.五行} ／ 陰陽 : {prof.陰陽}（日干ベース）")
     print(f"   タイプ: {t.名称}（{t.読み}） [{t.type_id}]")
     print(f"          {t.一言特徴}")

@@ -20,6 +20,7 @@ from .engine import (
     get_three_pillars,
     get_reading,
     get_compatibility,
+    get_five_element_balance,
 )
 
 app = FastAPI(
@@ -93,6 +94,14 @@ def month_pillar(q: BirthDatetimeQuery) -> dict:
 @app.post("/three-pillars")
 def three_pillars(q: BirthDatetimeQuery) -> dict:
     return get_three_pillars(
+        q.to_value(), late_night_boundary=q.late_night_boundary
+    ).to_dict()
+
+
+@app.post("/five-element-balance")
+def five_element_balance(q: BirthDatetimeQuery) -> dict:
+    """三柱（年・月・日）の五行バランス。"""
+    return get_five_element_balance(
         q.to_value(), late_night_boundary=q.late_night_boundary
     ).to_dict()
 

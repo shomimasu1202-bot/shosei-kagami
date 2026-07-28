@@ -59,11 +59,18 @@ def test_reading_is_deterministic() -> None:
     assert get_reading(d).to_dict() == get_reading(d).to_dict()
 
 
-def test_same_daystem_gives_same_reading() -> None:
-    # 60日差は同じ日干支 → 同じ鑑定文
+def test_same_daystem_shares_type_sections_but_balance_differs() -> None:
+    # 60日差は同じ日干支（日柱同一）だが、年柱・月柱が違う。
+    # → タイプ由来（性格/恋愛/仕事/対人）は同一、五行バランスは異なり得る。
     a = get_reading(dt.date(2000, 1, 7))
     b = get_reading(dt.date(2000, 1, 7) + dt.timedelta(days=60))
-    assert a.to_dict() == b.to_dict()
+    assert a.type_id == b.type_id
+    a_static = [s.to_dict() for s in a.sections if s.section_id != "balance"]
+    b_static = [s.to_dict() for s in b.sections if s.section_id != "balance"]
+    assert a_static == b_static
+    assert a.compatibility_guide.to_dict() == b.compatibility_guide.to_dict()
+    # 五行バランスは三柱で決まるため、この2日付では異なる（個別化の証拠）
+    assert a.element_balance.to_dict() != b.element_balance.to_dict()
 
 
 # ---------------------------------------------------------------------------
@@ -94,9 +101,26 @@ def test_headline_contains_name_and_element() -> None:
 
 
 def test_section_titles_match_spec() -> None:
+    # get_reading は五行バランスを基本性格の直後に挿入する。
     r = get_reading(dt.date(2000, 1, 7))
     titles = [s.title for s in r.sections]
-    assert titles == ["基本性格・強み・課題", "恋愛・結婚", "仕事・適職・金運", "対人関係・相性"]
+    assert titles == [
+        "基本性格・強み・課題",
+        "五行バランス",
+        "恋愛・結婚",
+        "仕事・適職・金運",
+        "対人関係・相性",
+    ]
+
+
+def test_build_for_type_without_balance_has_four_sections() -> None:
+    # balance を渡さない場合は静的4セクションのみ。
+    from app.engine import build_reading_for_type, TYPE_TABLE
+    r = build_reading_for_type(TYPE_TABLE[0])
+    assert [s.section_id for s in r.sections] == [
+        "personality", "love", "work", "relations",
+    ]
+    assert r.element_balance is None
 
 
 # ---------------------------------------------------------------------------

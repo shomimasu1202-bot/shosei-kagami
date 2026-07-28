@@ -41,6 +41,11 @@ from .pillars import (
     get_month_pillar,
     get_three_pillars,
 )
+from .element_balance import (
+    FiveElementBalance,
+    get_five_element_balance,
+    describe_balance,
+)
 from .compatibility import (
     Compatibility,
     CompatibilityGuide,
@@ -94,4 +99,7 @@ __all__ = [
     "compatibility_between_types",
     "compatibility_guide_for_type",
     "get_compatibility",
+    "FiveElementBalance",
+    "get_five_element_balance",
+    "describe_balance",
 ]

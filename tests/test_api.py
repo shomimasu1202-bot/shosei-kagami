@@ -57,11 +57,22 @@ def test_reading_endpoint() -> None:
     assert r.status_code == 200
     body = r.json()
     assert body["type_id"] == "you"
-    assert len(body["sections"]) == 4
+    assert len(body["sections"]) == 5  # 4静的 + 五行バランス
     assert body["sections"][0]["title"] == "基本性格・強み・課題"
+    assert body["sections"][1]["title"] == "五行バランス"
     assert body["sections"][-1]["title"] == "対人関係・相性"
     assert body["sections"][0]["text"]  # 非空
     assert "best" in body["compatibility_guide"]
+    assert body["element_balance"]["total"] == 6
+
+
+def test_five_element_balance_endpoint() -> None:
+    r = client.post("/five-element-balance", json={"birthdate": "1990-04-15"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total"] == 6
+    assert sum(body["counts"].values()) == 6
+    assert body["day_master"] == "金"  # 1990-04-15 = 庚（金）
 
 
 def test_compatibility_endpoint() -> None:

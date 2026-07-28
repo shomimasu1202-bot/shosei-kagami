@@ -25,6 +25,11 @@ from dataclasses import dataclass, asdict
 
 from .type_table import ShoseiType, get_type
 from .compatibility import CompatibilityGuide, compatibility_guide_for_type
+from .element_balance import (
+    FiveElementBalance,
+    get_five_element_balance,
+    describe_balance,
+)
 
 # (section_id, 表示タイトル) 表示順。
 SECTIONS: tuple[tuple[str, str], ...] = (
@@ -173,6 +178,7 @@ class Reading:
     headline: str
     sections: tuple[SectionReading, ...]
     compatibility_guide: CompatibilityGuide
+    element_balance: FiveElementBalance | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -184,6 +190,9 @@ class Reading:
             "headline": self.headline,
             "sections": [s.to_dict() for s in self.sections],
             "compatibility_guide": self.compatibility_guide.to_dict(),
+            "element_balance": (
+                self.element_balance.to_dict() if self.element_balance else None
+            ),
         }
 
 
@@ -197,17 +206,31 @@ def _compose_section(t: ShoseiType, section_id: str) -> str:
     return "".join(parts)
 
 
-def build_reading_for_type(t: ShoseiType) -> Reading:
-    """ShoseiType から鑑定文を組み立てる（決定的）。"""
+def build_reading_for_type(
+    t: ShoseiType,
+    balance: FiveElementBalance | None = None,
+) -> Reading:
+    """ShoseiType から鑑定文を組み立てる（決定的）。
+
+    balance を渡すと「五行バランス」セクション（基本性格の直後）と
+    element_balance フィールドが加わり、三柱の五行分布で個別化される。
+    balance=None なら日干タイプのみに基づく（タイプの基準文）。
+    """
     headline = f"{t.名称}（{t.読み}）― {t.一言特徴}【五行:{t.五行}／{t.陰陽}】"
-    sections = tuple(
-        SectionReading(
-            section_id=sid,
-            title=title,
-            text=_compose_section(t, sid),
-        )
+    sections: list[SectionReading] = [
+        SectionReading(section_id=sid, title=title, text=_compose_section(t, sid))
         for sid, title in SECTIONS
-    )
+    ]
+    if balance is not None:
+        # 「基本性格・強み・課題」(index 0) の直後に五行バランスを挿入。
+        sections.insert(
+            1,
+            SectionReading(
+                section_id="balance",
+                title="五行バランス",
+                text=describe_balance(balance),
+            ),
+        )
     return Reading(
         type_id=t.type_id,
         名称=t.名称,
@@ -215,8 +238,9 @@ def build_reading_for_type(t: ShoseiType) -> Reading:
         五行=t.五行,
         陰陽=t.陰陽,
         headline=headline,
-        sections=sections,
+        sections=tuple(sections),
         compatibility_guide=compatibility_guide_for_type(t),
+        element_balance=balance,
     )
 
 
@@ -225,6 +249,7 @@ def get_reading(
     *,
     late_night_boundary: bool = False,
 ) -> Reading:
-    """生年月日 → 鑑定文（日干タイプ＋五行陰陽で合成）。"""
+    """生年月日 → 鑑定文（日干タイプ＋五行陰陽＋三柱の五行バランスで合成）。"""
     t = get_type(value, late_night_boundary=late_night_boundary)
-    return build_reading_for_type(t)
+    balance = get_five_element_balance(value, late_night_boundary=late_night_boundary)
+    return build_reading_for_type(t, balance)
