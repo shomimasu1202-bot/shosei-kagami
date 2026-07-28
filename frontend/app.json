@@ -12,6 +12,6 @@
     "assetBundlePatterns": ["**/*"],
     "ios": { "supportsTablet": true },
     "android": {},
-    "web": { "favicon": "./assets/favicon.png" }
+    "web": { "bundler": "metro" }
   }
 }
