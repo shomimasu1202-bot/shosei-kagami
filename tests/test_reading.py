@@ -96,7 +96,7 @@ def test_headline_contains_name_and_element() -> None:
 def test_section_titles_match_spec() -> None:
     r = get_reading(dt.date(2000, 1, 7))
     titles = [s.title for s in r.sections]
-    assert titles == ["基本性格・強み・課題", "恋愛・結婚", "仕事・適職・金運"]
+    assert titles == ["基本性格・強み・課題", "恋愛・結婚", "仕事・適職・金運", "対人関係・相性"]
 
 
 # ---------------------------------------------------------------------------

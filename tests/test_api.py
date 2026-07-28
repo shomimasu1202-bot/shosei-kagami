@@ -57,9 +57,25 @@ def test_reading_endpoint() -> None:
     assert r.status_code == 200
     body = r.json()
     assert body["type_id"] == "you"
-    assert len(body["sections"]) == 3
+    assert len(body["sections"]) == 4
     assert body["sections"][0]["title"] == "基本性格・強み・課題"
+    assert body["sections"][-1]["title"] == "対人関係・相性"
     assert body["sections"][0]["text"]  # 非空
+    assert "best" in body["compatibility_guide"]
+
+
+def test_compatibility_endpoint() -> None:
+    # 甲(木/2000-01-07) と 丙(火/2000-01-09) → 木生火の相生（◎）
+    r = client.post(
+        "/compatibility",
+        json={"birthdate_a": "2000-01-07", "birthdate_b": "2000-01-09"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["type_id_a"] == "you"
+    assert body["type_id_b"] == "asahi"
+    assert body["relation"] == "相生"
+    assert body["level"] == "◎"
 
 
 def test_year_pillar_endpoint_with_time() -> None:

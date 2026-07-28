@@ -37,6 +37,8 @@ def show(date_str: str) -> None:
     for sec in r.sections:
         print(f"   【{sec.title}】")
         print(f"     {sec.text}")
+    g = r.compatibility_guide
+    print(f"   相性 : 好相性(相生) {'・'.join(g.best)} ／ 要注意(相剋) {'・'.join(g.caution)}")
     print()
 
 

@@ -41,6 +41,15 @@ from .pillars import (
     get_month_pillar,
     get_three_pillars,
 )
+from .compatibility import (
+    Compatibility,
+    CompatibilityGuide,
+    ELEMENTS,
+    element_relation,
+    compatibility_between_types,
+    compatibility_guide_for_type,
+    get_compatibility,
+)
 from .reading import (
     SECTIONS,
     SectionReading,
@@ -78,4 +87,11 @@ __all__ = [
     "Reading",
     "build_reading_for_type",
     "get_reading",
+    "Compatibility",
+    "CompatibilityGuide",
+    "ELEMENTS",
+    "element_relation",
+    "compatibility_between_types",
+    "compatibility_guide_for_type",
+    "get_compatibility",
 ]

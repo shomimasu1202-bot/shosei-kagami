@@ -19,6 +19,7 @@ from .engine import (
     get_month_pillar,
     get_three_pillars,
     get_reading,
+    get_compatibility,
 )
 
 app = FastAPI(
@@ -94,6 +95,19 @@ def three_pillars(q: BirthDatetimeQuery) -> dict:
     return get_three_pillars(
         q.to_value(), late_night_boundary=q.late_night_boundary
     ).to_dict()
+
+
+class CompatibilityQuery(BaseModel):
+    """2人の相性診断。birthdate_a から見た視点で返す。"""
+
+    birthdate_a: _dt.date = Field(..., description="1人目の生年月日")
+    birthdate_b: _dt.date = Field(..., description="2人目の生年月日")
+
+
+@app.post("/compatibility")
+def compatibility(q: CompatibilityQuery) -> dict:
+    """2人の相性（五行の相生・相剋ベース）。"""
+    return get_compatibility(q.birthdate_a, q.birthdate_b).to_dict()
 
 
 @app.post("/reading")
