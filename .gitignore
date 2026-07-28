@@ -1,15 +1,4 @@
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-# venv
-venv/
-.venv/
-env/
+# === 掌星鑑 monorepo root ===
 
 # OS / editor
 .DS_Store
@@ -17,5 +6,21 @@ Thumbs.db
 .idea/
 .vscode/
 
-# env files
+# Python (backend/)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+backend/venv/
+.venv/
+env/
 .env
+
+# Node / Expo (frontend/)
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
