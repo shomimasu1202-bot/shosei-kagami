@@ -67,6 +67,16 @@ def test_reading_endpoint() -> None:
     assert sum(body["element_balance"]["percentages"].values()) == 100
 
 
+def test_cors_header_present() -> None:
+    r = client.post(
+        "/type",
+        json={"birthdate": "2000-01-07"},
+        headers={"Origin": "http://localhost:8081"},
+    )
+    assert r.status_code == 200
+    assert r.headers.get("access-control-allow-origin") == "*"
+
+
 def test_reading_endpoint_with_time_uses_four_pillars() -> None:
     r = client.post("/reading", json={"birthdate": "2000-01-07", "birthtime": "10:00"})
     assert r.status_code == 200

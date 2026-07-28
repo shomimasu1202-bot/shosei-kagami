@@ -9,6 +9,7 @@ from __future__ import annotations
 import datetime as _dt
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .engine import (
@@ -29,6 +30,15 @@ app = FastAPI(
     title="掌星鑑 API",
     version="0.1.0",
     description="生年月日 → 日干支・五行 → 掌星鑑オリジナル10タイプ（Phase 1）",
+)
+
+# 開発用CORS。Expo web / ブラウザからのクロスオリジン取得を許可する。
+# 本番では allow_origins を実際のフロントのオリジンに絞ること。
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

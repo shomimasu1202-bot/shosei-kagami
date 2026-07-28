@@ -50,14 +50,6 @@ export type Reading = {
   element_balance: ElementBalance | null;
 };
 
-export type Pillar = {
-  stem: string;
-  branch: string;
-  五行: string;
-  陰陽?: string;
-  extra?: string;
-};
-
 export type FourPillars = {
   year: {
     year_stem_name: string;

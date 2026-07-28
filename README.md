@@ -237,12 +237,17 @@ venv\Scripts\python.exe -m scripts.sample 1990-04-15
 ```bash
 cd frontend
 npm install
-npm run start   # Expo。iOS/Android/Web で確認
+npm run web     # 最も手軽。ブラウザで開く（エミュレータ不要）
+# または
+npm run start   # Expo。iOS/Android/Web を選択
 ```
 
-- バックエンド接続先は [`frontend/src/api.ts`](frontend/src/api.ts) の `API_BASE_URL`
+- **一番手軽なのは `npm run web`**（ブラウザ表示・実機/エミュレータ不要）。web 用依存
+  （`react-dom` / `react-native-web` / `@expo/metro-runtime`）は同梱済み。
+- バックエンドを先に起動: `cd backend && venv\Scripts\uvicorn.exe app.main:app --host 0.0.0.0 --reload`。
+  ブラウザからの取得のため **CORS を許可済み**（開発用に全オリジン許可）。
+- 接続先は [`frontend/src/api.ts`](frontend/src/api.ts) の `API_BASE_URL`
   （iOS/Web=`127.0.0.1`、Android エミュレータ=`10.0.2.2`、実機は PC の LAN IP）。
-- バックエンドを `uvicorn app.main:app --host 0.0.0.0 --reload` で起動しておくこと。
 
 ## 権利
 
