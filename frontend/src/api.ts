@@ -7,8 +7,25 @@
 
 import { Platform } from 'react-native';
 
-export const API_BASE_URL =
-  Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://127.0.0.1:8000';
+// 接続先バックエンドのURLを決める。
+//  - web: 開いているページと同じホスト（localhost でも PCのLAN IP でもOK）の :8000
+//  - Android エミュレータ: 10.0.2.2（ホストPCを指す特別なIP）
+//  - iOS シミュレータ等: 127.0.0.1
+// 実機(Expo Go)や別PCから使う場合は、開いた URL のホスト名がそのまま使われる。
+function resolveApiBase(): string {
+  if (
+    Platform.OS === 'web' &&
+    typeof window !== 'undefined' &&
+    window.location &&
+    window.location.hostname
+  ) {
+    return `http://${window.location.hostname}:8000`;
+  }
+  if (Platform.OS === 'android') return 'http://10.0.2.2:8000';
+  return 'http://127.0.0.1:8000';
+}
+
+export const API_BASE_URL = resolveApiBase();
 
 // ---- レスポンス型（バックエンドの to_dict に対応）----
 
