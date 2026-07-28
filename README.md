@@ -5,14 +5,16 @@
 掌星鑑オリジナルの10タイプを決定的に算出する。
 
 - **フロントエンド**: React Native (Expo / TypeScript) — `frontend/`
-- **バックエンド**: Python / FastAPI — `backend/`（git 管理はこちら側で初期化）
+- **バックエンド**: Python / FastAPI — `backend/`
+- git はルート（`shosei-kagami/`）で一元管理するモノレポ構成。
 
 ## リポジトリ構成
 
 ```
-shosei-kagami/
+shosei-kagami/          ← git リポジトリ（モノレポ）
 ├── README.md
-├── backend/            ← Python (FastAPI)。git リポジトリ
+├── .gitignore
+├── backend/            ← Python (FastAPI)
 │   ├── app/
 │   │   ├── main.py             FastAPI アプリ
 │   │   └── engine/             計算エンジン
