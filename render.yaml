@@ -1,0 +1,12 @@
+# Render Blueprint: バックエンド(FastAPI)＋ビルド済みフロントを1サービスで公開。
+# 使い方: Render で「New +」→「Blueprint」→ このリポジトリを選択。
+# （手動作成する場合は Web Service で下記の設定を入力）
+services:
+  - type: web
+    name: shosei-kagami
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true

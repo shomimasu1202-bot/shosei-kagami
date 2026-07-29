@@ -7,9 +7,11 @@ Phase 1 では日柱ベースの計算エンジンをHTTPで公開する。
 from __future__ import annotations
 
 import datetime as _dt
+import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .engine import (
@@ -172,3 +174,11 @@ def shosei_type_get(birthdate: str) -> dict:
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return get_type(d).to_dict()
+
+
+# --- ビルド済みフロント(web)の配信 ---
+# backend/web/ に Expo の web ビルド(dist)を置くと、同一オリジンで画面も配信する。
+# API ルートより後にマウントするため、/reading 等のAPIが優先される。
+_WEB_DIR = os.path.join(os.path.dirname(__file__), "..", "web")
+if os.path.isdir(_WEB_DIR):
+    app.mount("/", StaticFiles(directory=_WEB_DIR, html=True), name="web")

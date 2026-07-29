@@ -70,6 +70,21 @@ def test_reading_endpoint() -> None:
     )
 
 
+def test_serves_frontend_index() -> None:
+    # backend/web にビルド済みフロントがあれば、ルートで index.html を配信する。
+    import os
+    web_dir = os.path.join(os.path.dirname(__file__), "..", "web")
+    if not os.path.isdir(web_dir):
+        import pytest
+        pytest.skip("frontend build (backend/web) 未配置")
+    r = client.get("/")
+    assert r.status_code == 200
+    assert "text/html" in r.headers.get("content-type", "")
+    assert 'id="root"' in r.text
+    # APIはフロント配信より優先される
+    assert client.get("/health").json()["status"] == "ok"
+
+
 def test_cors_header_present() -> None:
     r = client.post(
         "/type",

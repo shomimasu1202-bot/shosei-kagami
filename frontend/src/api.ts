@@ -29,14 +29,27 @@ function devMachineHost(): string | null {
 }
 
 function resolveApiBase(): string {
+  // 1) 明示指定（本番ビルド等）: EXPO_PUBLIC_API_BASE_URL
+  const env = process.env.EXPO_PUBLIC_API_BASE_URL;
+  if (env && env.length > 0) return env.replace(/\/+$/, '');
+
+  // 2) web
   if (
     Platform.OS === 'web' &&
     typeof window !== 'undefined' &&
     window.location &&
     window.location.hostname
   ) {
-    return `http://${window.location.hostname}:8000`;
+    const { protocol, hostname, port, origin } = window.location;
+    // Expo dev server (8081/19006) のときは別ポートのバックエンド :8000 を指す
+    if (port === '8081' || port === '19006') {
+      return `${protocol}//${hostname}:8000`;
+    }
+    // それ以外（= バックエンドが同じオリジンでフロントを配信している本番）は同一オリジン
+    return origin;
   }
+
+  // 3) native（Expo Go 等）
   const host = devMachineHost();
   if (host) return `http://${host}:8000`;
   if (Platform.OS === 'android') return 'http://10.0.2.2:8000';
