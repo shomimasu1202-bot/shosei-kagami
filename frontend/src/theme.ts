@@ -1,26 +1,29 @@
-// 掌星鑑 共通テーマ（配色・五行カラー）。
+// 掌星鑑 共通テーマ（やわらかいローズピンク基調・女性向け）。
 
 export const colors = {
-  bg: '#0d1b2a',
-  card: '#1b2a3a',
-  cardAlt: '#22344a',
-  accent: '#ffd166',
-  text: '#e8eef4',
-  subtext: '#c0ccda',
-  muted: '#8899aa',
-  error: '#ff6b6b',
-  good: '#7bd88f', // ◎ 相生
-  ok: '#6ec1e4', // ○ 比和
-  caution: '#ffa94d', // △ 相剋
+  bg: '#fff5f8', // ほんのりピンクの生成り
+  card: '#ffffff',
+  cardAlt: '#fdeaf1', // 入力欄・バーの下地（薄ピンク）
+  accent: '#e86a92', // ローズピンク（ボタン・見出し・アクティブ）
+  accentSoft: '#f7c6d8', // やわらかいピンク
+  onAccent: '#ffffff', // ピンク上の文字
+  text: '#5b4550', // 深いモーブ（本文）
+  subtext: '#9a818a',
+  muted: '#c3aeb6',
+  border: '#f4d9e3',
+  error: '#e5566b',
+  good: '#e86a92', // ◎ 相生（ローズ）
+  ok: '#7fb0dd', // ○ 比和（やわらかい水色）
+  caution: '#eaa14e', // △ 相剋（アンバー）
 };
 
-// 五行のカラー（木火土金水）。
+// 五行のカラー（木火土金水）— 明るい下地でも映えるやわらかい色。
 export const elementColors: Record<string, string> = {
-  木: '#5fbf77',
-  火: '#ff6b6b',
-  土: '#e0a458',
-  金: '#f2d16b',
-  水: '#5aa9e6',
+  木: '#63c187',
+  火: '#f2778f',
+  土: '#e6a862',
+  金: '#e7c44e',
+  水: '#66aee6',
 };
 
 export const ELEMENTS = ['木', '火', '土', '金', '水'] as const;

@@ -64,7 +64,7 @@ export function PrimaryButton({
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={colors.bg} />
+        <ActivityIndicator color={colors.onAccent} />
       ) : (
         <Text style={styles.buttonText}>{title}</Text>
       )}
@@ -79,34 +79,49 @@ export function ErrorText({ message }: { message: string }) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 22,
+    padding: 20,
     marginTop: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    // やわらかい影
+    shadowColor: '#e86a92',
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   sectionTitle: {
     color: colors.accent,
     fontSize: 15,
     fontWeight: '700',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   fieldWrap: { marginTop: 12 },
   fieldLabel: { color: colors.subtext, fontSize: 13, marginBottom: 6 },
   input: {
     backgroundColor: colors.cardAlt,
     color: colors.text,
-    borderRadius: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 13,
     fontSize: 18,
   },
   button: {
     marginTop: 18,
     backgroundColor: colors.accent,
-    borderRadius: 12,
-    paddingVertical: 15,
+    borderRadius: 100, // ピル型
+    paddingVertical: 16,
     alignItems: 'center',
+    shadowColor: '#e86a92',
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: colors.bg, fontSize: 17, fontWeight: '700' },
+  buttonText: { color: colors.onAccent, fontSize: 17, fontWeight: '700', letterSpacing: 1 },
   error: { color: colors.error, marginTop: 16, fontSize: 14, lineHeight: 20 },
 });
