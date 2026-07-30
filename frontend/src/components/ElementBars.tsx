@@ -2,7 +2,7 @@
 
 import { DimensionValue, StyleSheet, Text, View } from 'react-native';
 
-import { ELEMENTS, elementColors, colors } from '../theme';
+import { ELEMENTS, elementColors, colors, fonts } from '../theme';
 import { ElementBalance } from '../api';
 
 export function ElementBars({ balance }: { balance: ElementBalance }) {
@@ -36,7 +36,7 @@ export function ElementBars({ balance }: { balance: ElementBalance }) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', marginVertical: 4 },
-  label: { color: colors.text, width: 22, fontSize: 15, fontWeight: '700' },
+  label: { color: colors.text, width: 22, fontSize: 15, fontFamily: fonts.bold },
   track: {
     flex: 1,
     height: 14,
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   fill: { height: '100%', borderRadius: 7 },
-  pct: { color: colors.subtext, width: 62, fontSize: 12, textAlign: 'right' },
+  pct: { color: colors.subtext, width: 62, fontSize: 12, textAlign: 'right', fontFamily: fonts.body },
   dominant: { color: colors.accent, fontWeight: '700' },
   lacking: { color: colors.muted },
 });

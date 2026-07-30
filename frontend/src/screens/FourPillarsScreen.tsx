@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { fetchFourPillars, FourPillars } from '../api';
-import { colors, elementColors } from '../theme';
+import { colors, elementColors, fonts } from '../theme';
 import { Card, ErrorText, Field, PrimaryButton, SectionTitle } from '../components/ui';
 
 function PillarColumn({
@@ -113,18 +113,18 @@ const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 40 },
   pillarRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
   col: { flex: 1, alignItems: 'center' },
-  colLabel: { color: colors.subtext, fontSize: 13, marginBottom: 8 },
+  colLabel: { color: colors.subtext, fontSize: 13, marginBottom: 8, fontFamily: fonts.body },
   gz: {
     borderWidth: 2,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingVertical: 10,
     paddingHorizontal: 6,
     alignItems: 'center',
     backgroundColor: colors.cardAlt,
     minWidth: 46,
   },
-  gzChar: { color: colors.text, fontSize: 26, fontWeight: '700', lineHeight: 32 },
-  colElem: { fontSize: 14, fontWeight: '700', marginTop: 8 },
-  colSub: { color: colors.muted, fontSize: 11, marginTop: 2, textAlign: 'center' },
-  note: { color: colors.muted, fontSize: 11, marginTop: 16, lineHeight: 17 },
+  gzChar: { color: colors.text, fontSize: 26, fontFamily: fonts.title, lineHeight: 34 },
+  colElem: { fontSize: 14, fontFamily: fonts.bold, marginTop: 8 },
+  colSub: { color: colors.muted, fontSize: 11, marginTop: 2, textAlign: 'center', fontFamily: fonts.body },
+  note: { color: colors.muted, fontSize: 11, marginTop: 16, lineHeight: 17, fontFamily: fonts.body },
 });

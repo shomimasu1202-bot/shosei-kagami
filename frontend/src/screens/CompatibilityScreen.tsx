@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { fetchCompatibility, Compatibility } from '../api';
-import { colors, levelColor } from '../theme';
+import { colors, levelColor, fonts } from '../theme';
 import { Card, ErrorText, Field, PrimaryButton, SectionTitle } from '../components/ui';
 
 const LEVEL_LABEL: Record<string, string> = {
@@ -68,8 +68,8 @@ export function CompatibilityScreen() {
 const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 40 },
   pairRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  pairName: { color: colors.text, fontSize: 26, fontWeight: '700' },
-  pairX: { color: colors.subtext, fontSize: 20, marginHorizontal: 16 },
+  pairName: { color: colors.text, fontSize: 26, fontFamily: fonts.title },
+  pairX: { color: colors.subtext, fontSize: 20, marginHorizontal: 16, fontFamily: fonts.body },
   levelBadge: {
     alignSelf: 'center',
     alignItems: 'center',
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 18,
   },
-  levelMark: { fontSize: 52, fontWeight: '700', lineHeight: 58 },
-  levelLabel: { color: colors.subtext, fontSize: 13, marginTop: 2 },
-  body: { color: colors.text, fontSize: 15, lineHeight: 25, marginTop: 4 },
+  levelMark: { fontSize: 52, fontFamily: fonts.title, lineHeight: 60 },
+  levelLabel: { color: colors.subtext, fontSize: 13, marginTop: 2, fontFamily: fonts.body },
+  body: { color: colors.text, fontSize: 15, lineHeight: 26, marginTop: 4, fontFamily: fonts.body },
 });

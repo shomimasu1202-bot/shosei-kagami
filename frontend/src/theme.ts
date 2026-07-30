@@ -28,6 +28,23 @@ export const elementColors: Record<string, string> = {
 
 export const ELEMENTS = ['木', '火', '土', '金', '水'] as const;
 
+// フォント（女の子らしい丸文字）。見出し=まるっとポップ、本文=丸ゴシック。
+// 容量削減のため2書体のみ（bold は body と同じ書体で、色・サイズで強調）。
+export const fonts = {
+  title: 'MochiyPopOne_400Regular',
+  body: 'ZenMaruGothic_400Regular',
+  bold: 'ZenMaruGothic_400Regular',
+};
+
+// 五行ごとのカードテーマ（淡い下地＋差し色）。タイプカードの色分けに使う。
+export const elementTheme: Record<string, { tint: string; strong: string }> = {
+  木: { tint: '#eaf7ef', strong: '#4fae72' },
+  火: { tint: '#fdeef1', strong: '#e8637a' },
+  土: { tint: '#fbf2e6', strong: '#cf9a4f' },
+  金: { tint: '#fdf8e0', strong: '#c9ab2e' },
+  水: { tint: '#e9f3fc', strong: '#4f95d6' },
+};
+
 // 相性レベル → 色。
 export function levelColor(level: string): string {
   if (level === '◎') return colors.good;

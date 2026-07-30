@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { fetchReading, Reading } from '../api';
-import { colors, elementColors } from '../theme';
+import { colors, elementTheme, fonts } from '../theme';
 import { Card, ErrorText, Field, PrimaryButton, SectionTitle } from '../components/ui';
 import { ElementBars } from '../components/ElementBars';
 
@@ -44,8 +44,14 @@ export function ReadingScreen() {
 
       {result && (
         <>
-          <Card style={{ backgroundColor: elementColors[result.五行] + '22' }}>
-            <Text style={styles.typeName}>
+          <Card
+            style={{
+              backgroundColor: elementTheme[result.五行]?.tint ?? colors.card,
+              borderLeftWidth: 6,
+              borderLeftColor: elementTheme[result.五行]?.strong ?? colors.accent,
+            }}
+          >
+            <Text style={[styles.typeName, { color: elementTheme[result.五行]?.strong }]}>
               {result.名称}
               <Text style={styles.typeReading}>（{result.読み}）</Text>
             </Text>
@@ -93,23 +99,23 @@ export function ReadingScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, paddingBottom: 40 },
-  typeName: { color: colors.text, fontSize: 32, fontWeight: '700' },
-  typeReading: { color: colors.subtext, fontSize: 18, fontWeight: '400' },
-  typeMeta: { color: colors.subtext, fontSize: 15, marginTop: 6 },
-  balanceComment: { color: colors.subtext, fontSize: 13, marginTop: 10 },
-  body: { color: colors.text, fontSize: 15, lineHeight: 25 },
+  typeName: { color: colors.text, fontSize: 30, fontFamily: fonts.title },
+  typeReading: { color: colors.subtext, fontSize: 16, fontFamily: fonts.body },
+  typeMeta: { color: colors.subtext, fontSize: 15, marginTop: 8, fontFamily: fonts.body },
+  balanceComment: { color: colors.subtext, fontSize: 13, marginTop: 10, fontFamily: fonts.body },
+  body: { color: colors.text, fontSize: 15, lineHeight: 26, fontFamily: fonts.body },
   chipRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   chipLabelGood: {
     color: colors.good,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     width: 64,
     fontSize: 14,
   },
   chipLabelCaution: {
     color: colors.caution,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     width: 64,
     fontSize: 14,
   },
-  chipText: { color: colors.text, fontSize: 15, flex: 1 },
+  chipText: { color: colors.text, fontSize: 15, flex: 1, fontFamily: fonts.body },
 });

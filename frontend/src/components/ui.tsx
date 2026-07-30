@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 
 export function Card({ children, style }: { children: ReactNode; style?: object }) {
   return <View style={[styles.card, style]}>{children}</View>;
@@ -94,11 +94,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: colors.accent,
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fonts.bold,
     marginBottom: 8,
   },
   fieldWrap: { marginTop: 12 },
-  fieldLabel: { color: colors.subtext, fontSize: 13, marginBottom: 6 },
+  fieldLabel: { color: colors.subtext, fontSize: 13, marginBottom: 6, fontFamily: fonts.body },
   input: {
     backgroundColor: colors.cardAlt,
     color: colors.text,
@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 13,
     fontSize: 18,
+    fontFamily: fonts.body,
   },
   button: {
     marginTop: 18,
@@ -122,6 +123,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: colors.onAccent, fontSize: 17, fontWeight: '700', letterSpacing: 1 },
-  error: { color: colors.error, marginTop: 16, fontSize: 14, lineHeight: 20 },
+  buttonText: { color: colors.onAccent, fontSize: 17, fontFamily: fonts.bold, letterSpacing: 1 },
+  error: { color: colors.error, marginTop: 16, fontSize: 14, lineHeight: 20, fontFamily: fonts.body },
 });
